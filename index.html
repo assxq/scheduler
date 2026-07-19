@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MARCH SCHED">
-<link rel="manifest" href='data:application/manifest+json,{"name":"MARCH SCHED","short_name":"SCHED","display":"standalone","background_color":"%23151210","theme_color":"%23151210","start_url":"."}'>
-<title>MARCH SCHED — 스튜디오 스케줄러</title>
+<meta name="apple-mobile-web-app-title" content="세영에듀테크">
+<link rel="manifest" href='data:application/manifest+json,{"name":"%EC%84%B8%EC%98%81%EC%97%90%EB%93%80%ED%85%8C%ED%81%AC%20SCHED","short_name":"SCHED","display":"standalone","background_color":"%23151210","theme_color":"%23151210","start_url":"."}'>
+<title>세영에듀테크 — 스튜디오 스케줄러</title>
 <style>
 :root{
   --bg:#151210;
@@ -166,6 +166,10 @@ button.ghost:hover{color:var(--amber)}
 .mcell:hover{background:#221d17}
 .mcell .n{font-size:12px;font-weight:700;margin-bottom:3px;display:inline-block;padding:0 5px;margin-left:-5px;border-radius:4px;cursor:pointer}
 .mcell .n:hover{background:#2b2416;color:var(--amber)}
+.mcell.hol .n{color:#e07a6a}
+.mhol{position:absolute;top:7px;right:6px;font-size:9px;color:#e07a6a;max-width:62%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+.dayhead.hol .dnum{color:#e07a6a}
+.holnm{font-size:9px;color:#e07a6a;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mcell.out .n{color:var(--faint)}
 .mcell.today .n{color:var(--amber)}
 .mcell.sun .n{color:#e07a6a}.mcell.sat .n{color:#6fa8e0}
@@ -232,6 +236,16 @@ textarea{resize:vertical;min-height:60px}
 pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;margin-top:6px;white-space:pre;line-height:1.5}
 .statusline{font-size:12px;color:var(--dim);margin-top:8px;min-height:16px}
 .statusline.ok{color:var(--ok)}.statusline.err{color:#f0876f}
+.toolcard{
+  position:relative;display:block;background:var(--panel2);border:1px solid var(--line2);
+  border-radius:8px;padding:14px 44px 14px 16px;margin-bottom:10px;text-decoration:none;
+  transition:border-color .12s,background .12s;
+}
+.toolcard:hover{border-color:var(--amber);background:#2b2416}
+.toolcard .tn{font-family:ui-monospace,Menlo,monospace;font-size:13px;letter-spacing:.08em;color:var(--amber);margin-bottom:3px}
+.toolcard .td{font-size:12px;color:var(--dim)}
+.toolcard .ta{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:16px}
+.toolcard:hover .ta{color:var(--amber)}
 
 /* 토스트 */
 #toast{
@@ -261,7 +275,7 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
 <body>
 
 <div id="topbar">
-  <div id="logo">MARCH SCHED</div>
+  <div id="logo">세영에듀테크</div>
   <div class="navgrp">
     <button id="prevBtn" aria-label="이전">◀</button>
     <button id="todayBtn">오늘</button>
@@ -274,6 +288,7 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
     <button id="vwMonth">월간</button>
   </div>
   <button id="syncBtn" class="ghost"><span id="syncDot"></span><span id="syncText">동기화 설정</span></button>
+  <button id="toolsBtn" class="ghost" aria-label="스튜디오 도구">⊞</button>
   <button id="refreshBtn" class="ghost" aria-label="새로고침">⟳</button>
   <button id="settingsBtn" class="ghost" aria-label="설정">⚙</button>
 </div>
@@ -376,6 +391,30 @@ alter publication supabase_realtime add table scheduler_state;</pre>
   </div>
 </div>
 
+<!-- 스튜디오 도구 런처 -->
+<div class="overlay" id="toolsOverlay">
+  <div class="modal">
+    <h3>SEYOUNG EDUTECH · TOOLS</h3>
+    <a class="toolcard" href="./overlay-studio.html" target="_blank" rel="noopener">
+      <div class="tn">OVERLAY STUDIO</div>
+      <div class="td">방송 자막판 생성기</div>
+      <span class="ta">↗</span>
+    </a>
+    <a class="toolcard" href="./session-card-studio.html" target="_blank" rel="noopener">
+      <div class="tn">SESSION CARD STUDIO</div>
+      <div class="td">세션 카드 생성기</div>
+      <span class="ta">↗</span>
+    </a>
+    <a class="toolcard" href="./title-forge-studio.html" target="_blank" rel="noopener">
+      <div class="tn">TITLE FORGE STUDIO</div>
+      <div class="td">대본 → 제목/설명 생성기</div>
+      <span class="ta">↗</span>
+    </a>
+    <div class="hintbox">세 파일이 이 스케줄러(index.html)와 같은 저장소 폴더에 함께 올라가 있어야 열립니다.</div>
+    <div class="btnrow"><span class="grow"></span><button id="toolsClose" class="primary">닫기</button></div>
+  </div>
+</div>
+
 <div id="mChoice">
   <button id="mcMove" class="primary">이동</button>
   <button id="mcCopy">복사</button>
@@ -451,6 +490,38 @@ function renderCatbar(){
 function visEvents(){return selCat?state.events.filter(e=>e.catId===selCat):state.events}
 function esc(s){return String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
 
+/* ═══════════════ 한국 공휴일 ═══════════════ */
+let holidays={}; // {"2026-08-15":"광복절"}
+const HOL_FALLBACK_2026={
+  "2026-01-01":"신정","2026-02-16":"설날 연휴","2026-02-17":"설날","2026-02-18":"설날 연휴",
+  "2026-03-01":"삼일절","2026-03-02":"대체공휴일","2026-05-05":"어린이날",
+  "2026-05-24":"부처님오신날","2026-05-25":"대체공휴일","2026-06-03":"지방선거일",
+  "2026-06-06":"현충일","2026-08-15":"광복절","2026-08-17":"대체공휴일(광복절)",
+  "2026-09-24":"추석 연휴","2026-09-25":"추석","2026-09-26":"추석 연휴",
+  "2026-10-03":"개천절","2026-10-05":"대체공휴일","2026-10-09":"한글날","2026-12-25":"성탄절"
+};
+async function loadHolidays(year){
+  if(holidays["__y"+year])return;
+  holidays["__y"+year]=true;
+  const key="msched_hol_"+year;
+  const cached=localStorage.getItem(key);
+  if(cached){
+    try{Object.assign(holidays,JSON.parse(cached));return}catch(e){}
+  }
+  try{
+    const r=await fetch("https://date.nager.at/api/v3/PublicHolidays/"+year+"/KR");
+    if(!r.ok)throw 0;
+    const arr=await r.json();
+    const map={};
+    arr.forEach(h=>{map[h.date]=h.localName||h.name});
+    localStorage.setItem(key,JSON.stringify(map));
+    Object.assign(holidays,map);
+    refresh();
+  }catch(e){
+    if(year===2026){Object.assign(holidays,HOL_FALLBACK_2026);refresh()}
+  }
+}
+
 /* ═══════════════ 주간 뷰 렌더 ═══════════════ */
 const gridHead=document.getElementById("gridHead");
 const gridBody=document.getElementById("gridBody");
@@ -464,12 +535,15 @@ function hourH(){return parseFloat(getComputedStyle(document.documentElement).ge
 function buildWeek(){
   const ws=startOfWeek(anchor);
   weekDays=[...Array(7)].map((_,i)=>addDays(ws,i));
+  loadHolidays(weekDays[0].getFullYear());
+  loadHolidays(weekDays[6].getFullYear());
   // 헤더
   gridHead.querySelectorAll(".dayhead").forEach(e=>e.remove());
   weekDays.forEach((d,i)=>{
+    const hol=holidays[fmtD(d)];
     const h=document.createElement("div");
-    h.className="dayhead"+(sameDay(d,new Date())?" today":"")+(i===0?" sun":"")+(i===6?" sat":"");
-    h.innerHTML=`${DAYNM[i]}<br><span class="dnum">${d.getDate()}</span>`;
+    h.className="dayhead"+(sameDay(d,new Date())?" today":"")+(i===0?" sun":"")+(i===6?" sat":"")+(hol?" hol":"");
+    h.innerHTML=`${DAYNM[i]}<br><span class="dnum">${d.getDate()}</span>`+(hol?`<div class="holnm">${esc(hol)}</div>`:"");
     gridHead.appendChild(h);
   });
   // 시간 라벨
@@ -734,6 +808,8 @@ function openEdit(id,draft){
   document.getElementById("eEDate").value=fmtD(e);
   document.getElementById("eETime").value=fmtT(minsOf(e));
   document.getElementById("eMemo").value=ev.memo||"";
+  eEndTouched=false;
+  eDurMin=Math.max(10,(parseDT(ev.end)-parseDT(ev.start))/60000)||60;
   document.getElementById("eDelete").style.display=id?"":"none";
   document.getElementById("eDup").style.display=id?"":"none";
   editOverlay.classList.add("show");
@@ -771,6 +847,22 @@ document.getElementById("eDup").onclick=()=>{
 document.getElementById("eCancel").onclick=closeEdit;
 function closeEdit(){editOverlay.classList.remove("show");editing=null;editDraft=null}
 editOverlay.addEventListener("pointerdown",e=>{if(e.target===editOverlay)closeEdit()});
+
+// 시작 변경 → 종료 자동 세팅 (기본 1시간, 종료를 직접 고치면 자동 조정 중단)
+const eSD=document.getElementById("eSDate"),eST=document.getElementById("eSTime"),
+      eED=document.getElementById("eEDate"),eET=document.getElementById("eETime");
+let eEndTouched=false, eDurMin=60;
+function autoEnd(){
+  if(eEndTouched)return;
+  if(!eSD.value||!eST.value)return;
+  const s=parseDT(eSD.value+"T"+eST.value);
+  const e=new Date(s.getTime()+eDurMin*60000);
+  eED.value=fmtD(e);eET.value=fmtT(minsOf(e));
+}
+eSD.addEventListener("input",autoEnd);
+eST.addEventListener("input",autoEnd);
+eED.addEventListener("input",()=>{eEndTouched=true});
+eET.addEventListener("input",()=>{eEndTouched=true});
 
 /* ═══════════════ 카테고리 모달 ═══════════════ */
 const catOverlay=document.getElementById("catOverlay");
@@ -810,14 +902,18 @@ function renderMonth(){
   const grid=document.getElementById("mGrid");grid.innerHTML="";
   const today=new Date();
   const DAY=86400000, LANE_MAX=3, LANE_TOP=24, LANE_H=20;
+  loadHolidays(start.getFullYear());
+  loadHolidays(addDays(start,41).getFullYear());
 
   for(let w=0;w<6;w++){
     const days=[...Array(7)].map((_,i)=>addDays(start,w*7+i));
     const cells=days.map(d=>{
+      const hol=holidays[fmtD(d)];
       const cell=document.createElement("div");
-      cell.className="mcell"+(d.getMonth()!==m?" out":"")+(sameDay(d,today)?" today":"")+(d.getDay()===0?" sun":"")+(d.getDay()===6?" sat":"");
+      cell.className="mcell"+(d.getMonth()!==m?" out":"")+(sameDay(d,today)?" today":"")+(d.getDay()===0?" sun":"")+(d.getDay()===6?" sat":"")+(hol?" hol":"");
       cell.dataset.date=fmtD(d);
       const nEl=document.createElement("div");nEl.className="n";nEl.textContent=d.getDate();cell.appendChild(nEl);
+      if(hol){const hEl=document.createElement("div");hEl.className="mhol";hEl.textContent=hol;hEl.title=hol;cell.appendChild(hEl)}
       nEl.onclick=e=>{
         e.stopPropagation();
         if(mSuppress){mSuppress=false;return}
@@ -1122,6 +1218,10 @@ function openSettings(){
 }
 document.getElementById("settingsBtn").onclick=openSettings;
 document.getElementById("refreshBtn").onclick=()=>location.reload();
+const toolsOverlay=document.getElementById("toolsOverlay");
+document.getElementById("toolsBtn").onclick=()=>toolsOverlay.classList.add("show");
+document.getElementById("toolsClose").onclick=()=>toolsOverlay.classList.remove("show");
+toolsOverlay.addEventListener("pointerdown",e=>{if(e.target===toolsOverlay)toolsOverlay.classList.remove("show")});
 document.getElementById("syncBtn").onclick=openSettings;
 document.getElementById("setClose").onclick=()=>setOverlay.classList.remove("show");
 setOverlay.addEventListener("pointerdown",e=>{if(e.target===setOverlay)setOverlay.classList.remove("show")});
@@ -1157,7 +1257,7 @@ document.getElementById("expBtn").onclick=()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
   const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
-  a.download="march-sched-"+fmtD(new Date())+".json";
+  a.download="seyoung-sched-"+fmtD(new Date())+".json";
   a.click();
 };
 document.getElementById("impBtn").onclick=()=>document.getElementById("impFile").click();
@@ -1185,7 +1285,7 @@ function toast(msg){
   toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
 }
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeEdit();catOverlay.classList.remove("show");setOverlay.classList.remove("show")}
+  if(e.key==="Escape"){closeEdit();catOverlay.classList.remove("show");setOverlay.classList.remove("show");toolsOverlay.classList.remove("show")}
 });
 window.addEventListener("resize",()=>{if(viewMode==="week")buildWeek()});
 
