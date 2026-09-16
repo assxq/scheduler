@@ -288,6 +288,19 @@
   }
   #calDay .sm{font-size:12.5px; font-weight:400; color:var(--dim);}
 
+  /* ── 이름 편집 / 순서 이동 ────────────── */
+  .editname{
+    width:100%; background:var(--panel2); border:1px solid var(--amber);
+    color:var(--text); border-radius:6px; padding:5px 9px; font-size:15px;
+  }
+  .editname:focus{outline:none;}
+  li.drag{
+    background:#2A2318; border-color:var(--amber-dim); border-radius:8px;
+    box-shadow:0 10px 24px rgba(0,0,0,.5); position:relative; z-index:5;
+    touch-action:none; cursor:grabbing;
+  }
+  .stitle,.label{cursor:pointer; user-select:none; -webkit-user-select:none;}
+
   @media (max-width:560px){
     #top{padding:10px 12px; padding-top:calc(10px + env(safe-area-inset-top));}
     #logo{font-size:11.5px;}
@@ -577,7 +590,10 @@ function checkItem(l,item,remove){
   box.onclick=toggle;
 
   var label=document.createElement("div");
-  label.className="label"; label.textContent=item.text; label.onclick=toggle;
+  label.className="label"; label.textContent=item.text;
+  label.onclick=toggle;
+  label.ondblclick=function(e){ e.stopPropagation(); startRename(item,label); };
+  label.title="두 번 누르면 이름 수정";
 
   li.appendChild(box); li.appendChild(label);
   li.appendChild(delBtn(item, remove || function(){
@@ -595,7 +611,10 @@ function stageItem(l,item){
   li.className="stage"+(t&&d===t?" full":"");
 
   var row=document.createElement("div"); row.className="srow";
-  var title=document.createElement("div"); title.className="stitle"; title.textContent=item.text;
+  var title=document.createElement("div");
+  title.className="stitle"; title.textContent=item.text;
+  title.ondblclick=function(e){ e.stopPropagation(); startRename(item,title); };
+  title.title="두 번 누르면 이름 수정";
   var pc=document.createElement("div"); pc.className="spct"; pc.textContent=p+"%  ("+d+"/"+t+")";
   row.appendChild(title); row.appendChild(pc);
   row.appendChild(delBtn(item,function(){
@@ -712,6 +731,76 @@ $("calToday").onclick=function(){
   render(); touch();
 };
 
+/* 이름 편집: 더블클릭(모바일은 두 번 탭) */
+function startRename(item,el){
+  var inp=document.createElement("input");
+  inp.className="editname"; inp.value=item.text;
+  el.textContent=""; el.appendChild(inp);
+  inp.focus(); inp.select();
+  var closed=false;
+  var finish=function(save){
+    if(closed) return; closed=true;
+    if(save){ var v=inp.value.trim(); if(v) item.text=v; }
+    render(); touch();
+  };
+  inp.onkeydown=function(e){
+    e.stopPropagation();
+    if(e.key==="Enter"){ e.preventDefault(); finish(true); }
+    else if(e.key==="Escape"){ finish(false); }
+  };
+  inp.onblur=function(){ finish(true); };
+  inp.onclick=function(e){ e.stopPropagation(); };
+  inp.ondblclick=function(e){ e.stopPropagation(); };
+}
+
+/* 순서 이동: 길게 누른 뒤 위아래로 끌기 */
+var dragActive=false;
+document.addEventListener("touchmove",function(e){ if(dragActive) e.preventDefault(); },{passive:false});
+
+function makeDraggable(li,arr){
+  var timer=null, active=false, sx=0, sy=0;
+  function end(){
+    clearTimeout(timer); timer=null;
+    if(!active) return;
+    active=false; dragActive=false;
+    li.classList.remove("drag");
+    commitOrder(arr);
+  }
+  li.addEventListener("pointerdown",function(e){
+    if(e.target.closest("button")||e.target.tagName==="INPUT") return;
+    sx=e.clientX; sy=e.clientY;
+    clearTimeout(timer);
+    timer=setTimeout(function(){
+      active=true; dragActive=true;
+      li.classList.add("drag");
+      try{ li.setPointerCapture(e.pointerId); }catch(err){}
+      if(navigator.vibrate) navigator.vibrate(12);
+    },420);
+  });
+  li.addEventListener("pointermove",function(e){
+    if(!active){
+      if(timer&&(Math.abs(e.clientX-sx)>8||Math.abs(e.clientY-sy)>8)){ clearTimeout(timer); timer=null; }
+      return;
+    }
+    e.preventDefault();
+    var host=li.parentNode, els=[].slice.call(host.children), placed=false;
+    for(var i=0;i<els.length;i++){
+      var o=els[i]; if(o===li) continue;
+      var r=o.getBoundingClientRect();
+      if(e.clientY < r.top+r.height/2){ host.insertBefore(li,o); placed=true; break; }
+    }
+    if(!placed) host.appendChild(li);
+  });
+  li.addEventListener("pointerup",end);
+  li.addEventListener("pointercancel",end);
+  li.addEventListener("lostpointercapture",end);
+}
+function commitOrder(arr){
+  var ids=[].slice.call($("list").children).map(function(e){ return e.getAttribute("data-id"); });
+  arr.sort(function(a,b){ return ids.indexOf(a.id)-ids.indexOf(b.id); });
+  render(); touch();
+}
+
 function renderItems(){
   var l=active(), listEl=$("list");
   renderCal();
@@ -719,11 +808,16 @@ function renderItems(){
 
   var shown = isCal(l) ? dayArr(l,l.sel) : l.items;
   shown.forEach(function(item){
-    if(isStage(l)) listEl.appendChild(stageItem(l,item));
-    else if(isCal(l)) listEl.appendChild(checkItem(l,item,function(){
+    if(!item.id) item.id=uid();
+    var li;
+    if(isStage(l)) li=stageItem(l,item);
+    else if(isCal(l)) li=checkItem(l,item,function(){
       l.days[l.sel]=l.days[l.sel].filter(function(x){return x!==item;});
-    }));
-    else listEl.appendChild(checkItem(l,item));
+    });
+    else li=checkItem(l,item);
+    li.setAttribute("data-id",item.id);
+    makeDraggable(li,shown);
+    listEl.appendChild(li);
   });
 
   var p=prog(l);
