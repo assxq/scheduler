@@ -156,6 +156,42 @@ button.ghost:hover{color:var(--amber)}
   content:"";position:absolute;left:-4px;top:-4px;width:7px;height:7px;border-radius:50%;background:var(--live);
 }
 
+/* ───── 일정(아젠다) 뷰 ───── */
+#agendaView{flex:1;display:none;overflow:auto}
+#agWrap{max-width:640px;margin:0 auto;padding:18px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+#agHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+#agKicker{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;color:var(--amber);margin-bottom:4px}
+#agDate{font-size:24px;font-weight:800;letter-spacing:-.01em}
+#agDate .dow{color:var(--dim);font-weight:600;font-size:18px;margin-left:6px}
+#agDate .hol{display:block;font-size:12px;color:#e07a6a;font-weight:600;margin-top:2px}
+#agCount{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--dim);white-space:nowrap;padding-bottom:4px}
+#agTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
+#agTabs button{padding:10px 0;font-size:14px;color:var(--dim)}
+#agTabs button.on{background:#2b2416;border-color:var(--amber);color:var(--amber);font-weight:700}
+.agcard{
+  background:var(--panel);border:1px solid var(--line2);border-radius:12px;
+  padding:16px 16px 14px 18px;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;
+}
+.agcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#888)}
+.agcard.done{opacity:.55}
+.agtop{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.agtime{font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;line-height:1.1;color:var(--text)}
+.agtime small{display:block;font-size:12px;font-weight:400;color:var(--dim);margin-top:4px}
+.agcat{
+  flex-shrink:0;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;
+  background:color-mix(in srgb,var(--c,#888) 22%, #1b1712);color:color-mix(in srgb,var(--c,#888) 70%, #fff);
+}
+.agtitle{font-size:17px;font-weight:700;margin-top:10px;word-break:break-all}
+.agmemo{font-size:13px;color:var(--dim);line-height:1.6;margin-top:6px;white-space:pre-wrap;word-break:break-all}
+.agstat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
+.agstat button{padding:10px 0;font-size:13px;color:var(--dim)}
+.agstat button.on[data-s="wait"]{background:#3a342a;border-color:#6b6355;color:var(--text);font-weight:700}
+.agstat button.on[data-s="ready"]{background:#3b2c12;border-color:var(--amber);color:var(--amber);font-weight:700}
+.agstat button.on[data-s="done"]{background:#1d3321;border-color:var(--ok);color:var(--ok);font-weight:700}
+.agempty{text-align:center;color:var(--faint);padding:48px 0 36px;font-size:14px;line-height:1.7}
+.agempty b{display:block;font-family:ui-monospace,Menlo,monospace;color:var(--dim);font-size:12px;letter-spacing:.14em;margin-bottom:6px}
+#agAdd{width:100%;padding:14px 0;font-size:14px;margin-top:4px}
+
 /* ───── 월간 뷰 ───── */
 #monthView{flex:1;display:none;flex-direction:column;overflow:auto;padding:0}
 #mGrid{flex:1;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(96px,1fr)}
@@ -264,6 +300,10 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
   .handle.top{top:-4px}.handle.bot{bottom:-4px}
 }
 @media (max-width:640px){
+  #syncText{display:none}
+  #syncDot{margin-right:0}
+  #topbar{gap:6px;padding-left:10px;padding-right:10px}
+  #topbar .ghost{padding:7px 8px}
   :root{--hour-h:48px;--timecol:44px}
   #rangeLabel{min-width:0;font-size:13px}
   #logo{display:none}
@@ -284,6 +324,7 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
   <div id="rangeLabel" class="mono"></div>
   <div id="spacer"></div>
   <div class="viewtoggle">
+    <button id="vwAgenda">일정</button>
     <button id="vwWeek" class="on">주간</button>
     <button id="vwMonth">월간</button>
   </div>
@@ -309,6 +350,25 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
       <div id="timecol"></div>
       <!-- day cols -->
     </div>
+  </div>
+</div>
+
+<div id="agendaView">
+  <div id="agWrap">
+    <div id="agHead">
+      <div>
+        <div id="agKicker"></div>
+        <div id="agDate"></div>
+      </div>
+      <div id="agCount"></div>
+    </div>
+    <div id="agTabs">
+      <button data-off="0">오늘</button>
+      <button data-off="1">내일</button>
+      <button data-off="2">모레</button>
+    </div>
+    <div id="agList"></div>
+    <button id="agAdd" class="primary">＋ 이 날 일정 추가</button>
   </div>
 </div>
 
@@ -395,11 +455,6 @@ alter publication supabase_realtime add table scheduler_state;</pre>
 <div class="overlay" id="toolsOverlay">
   <div class="modal">
     <h3>SEYOUNG EDUTECH · TOOLS</h3>
-    <a class="toolcard" href="./checklist-studio.html" target="_blank" rel="noopener">
-      <div class="tn">CHECKLIST</div>
-      <div class="td">스튜디오 체크리스트 · 여러 목록</div>
-      <span class="ta">↗</span>
-    </a>
     <a class="toolcard" href="./overlay-studio.html" target="_blank" rel="noopener">
       <div class="tn">OVERLAY STUDIO</div>
       <div class="td">방송 자막판 생성기</div>
@@ -413,6 +468,11 @@ alter publication supabase_realtime add table scheduler_state;</pre>
     <a class="toolcard" href="./title-forge-studio.html" target="_blank" rel="noopener">
       <div class="tn">TITLE FORGE STUDIO</div>
       <div class="td">대본 → 제목/설명 생성기</div>
+      <span class="ta">↗</span>
+    </a>
+    <a class="toolcard" href="./checklist-studio.html" target="_blank" rel="noopener">
+      <div class="tn">CHECKLIST</div>
+      <div class="td">스튜디오 체크리스트 · 여러 목록</div>
       <span class="ta">↗</span>
     </a>
     <div class="hintbox">네 파일이 이 스케줄러(index.html)와 같은 저장소 폴더에 함께 올라가 있어야 열립니다.</div>
@@ -895,7 +955,7 @@ document.getElementById("catAdd").onclick=()=>{
 };
 document.getElementById("catDone").onclick=()=>{catOverlay.classList.remove("show");refresh()};
 catOverlay.addEventListener("pointerdown",e=>{if(e.target===catOverlay){catOverlay.classList.remove("show");refresh()}});
-function refreshLight(){renderCatbar();if(viewMode==="week")renderEvents();else renderMonth()}
+function refreshLight(){renderCatbar();if(viewMode==="week")renderEvents();else refresh()}
 
 /* ═══════════════ 월간 뷰 ═══════════════ */
 let mSuppress=false;
@@ -1114,19 +1174,105 @@ document.getElementById("mcCancel").onclick=()=>{hideChoice();renderMonth()};
 /* ═══════════════ 뷰 전환/네비 ═══════════════ */
 function setView(v){
   viewMode=v;
+  document.getElementById("vwAgenda").classList.toggle("on",v==="agenda");
   document.getElementById("vwWeek").classList.toggle("on",v==="week");
   document.getElementById("vwMonth").classList.toggle("on",v==="month");
+  document.getElementById("agendaView").style.display=v==="agenda"?"block":"none";
   document.getElementById("weekView").style.display=v==="week"?"flex":"none";
   document.getElementById("monthView").style.display=v==="month"?"flex":"none";
   refresh();
   if(v==="week")scrollToMorning();
 }
-function refresh(){if(viewMode==="week")buildWeek();else renderMonth()}
-document.getElementById("vwWeek").onclick=()=>setView("week");
-document.getElementById("vwMonth").onclick=()=>setView("month");
-document.getElementById("prevBtn").onclick=()=>{anchor=viewMode==="week"?addDays(anchor,-7):new Date(anchor.getFullYear(),anchor.getMonth()-1,1);refresh()};
-document.getElementById("nextBtn").onclick=()=>{anchor=viewMode==="week"?addDays(anchor,7):new Date(anchor.getFullYear(),anchor.getMonth()+1,1);refresh()};
-document.getElementById("todayBtn").onclick=()=>{anchor=new Date();refresh();if(viewMode==="week")scrollToMorning()};
+function refresh(){
+  if(viewMode==="agenda")renderAgenda();
+  else if(viewMode==="week")buildWeek();
+  else renderMonth();
+}
+document.getElementById("vwAgenda").onclick=()=>{agDay=addDays(new Date(),1);setView("agenda")};
+document.getElementById("vwWeek").onclick=()=>{if(viewMode==="agenda")anchor=new Date(agDay);setView("week")};
+document.getElementById("vwMonth").onclick=()=>{if(viewMode==="agenda")anchor=new Date(agDay);setView("month")};
+document.getElementById("prevBtn").onclick=()=>{
+  if(viewMode==="agenda"){agDay=addDays(agDay,-1);return refresh()}
+  anchor=viewMode==="week"?addDays(anchor,-7):new Date(anchor.getFullYear(),anchor.getMonth()-1,1);refresh();
+};
+document.getElementById("nextBtn").onclick=()=>{
+  if(viewMode==="agenda"){agDay=addDays(agDay,1);return refresh()}
+  anchor=viewMode==="week"?addDays(anchor,7):new Date(anchor.getFullYear(),anchor.getMonth()+1,1);refresh();
+};
+document.getElementById("todayBtn").onclick=()=>{
+  if(viewMode==="agenda"){agDay=new Date();return refresh()}
+  anchor=new Date();refresh();if(viewMode==="week")scrollToMorning();
+};
+
+/* ═══════════════ 일정(아젠다) 뷰 ═══════════════ */
+let agDay=addDays(new Date(),1);   // 기본: 내일
+const STAT={wait:"대기",ready:"준비완료",done:"완료"};
+function renderAgenda(){
+  const d=new Date(agDay);d.setHours(0,0,0,0);
+  const t=new Date();t.setHours(0,0,0,0);
+  const off=Math.round((d-t)/86400000);
+  loadHolidays(d.getFullYear());
+  document.getElementById("rangeLabel").textContent=
+    `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+  const rel={"-1":"YESTERDAY · 어제","0":"TODAY · 오늘","1":"TOMORROW · 내일","2":"모레"}[off]
+    ||(off>0?`D-${off}`:`${-off}일 전`);
+  document.getElementById("agKicker").textContent=rel;
+  const hol=holidays[fmtD(d)];
+  document.getElementById("agDate").innerHTML=
+    `${d.getMonth()+1}월 ${d.getDate()}일<span class="dow">${DAYNM[d.getDay()]}요일</span>`+
+    (hol?`<span class="hol">${esc(hol)}</span>`:"");
+  document.querySelectorAll("#agTabs button").forEach(b=>b.classList.toggle("on",+b.dataset.off===off));
+
+  const evs=eventsOnDay(d);
+  document.getElementById("agCount").textContent=evs.length?`${evs.length}건`:"";
+  const list=document.getElementById("agList");list.innerHTML="";
+  if(!evs.length){
+    list.innerHTML=`<div class="agempty"><b>NO SCHEDULE</b>${off===1?"내일은":"이 날은"} 잡힌 일정이 없어요</div>`;
+    return;
+  }
+  const dayE=addDays(d,1);
+  evs.forEach(ev=>{
+    const c=catById(ev.catId);
+    const s=parseDT(ev.start),e=parseDT(ev.end);
+    const sTxt=s<d?"전날부터":fmtT(minsOf(s));
+    const eTxt=e>dayE?"다음날 "+fmtT(minsOf(e)):(minsOf(e)===0&&e>d?"24:00":fmtT(minsOf(e)));
+    const dur=Math.round((e-s)/60000);
+    const durTxt=dur>=60?`${Math.floor(dur/60)}시간${dur%60?" "+dur%60+"분":""}`:`${dur}분`;
+    const st=ev.status||"wait";
+    const card=document.createElement("div");
+    card.className="agcard"+(st==="done"?" done":"");
+    card.style.setProperty("--c",c.color);
+    card.innerHTML=`
+      <div class="agtop">
+        <div class="agtime">${sTxt} – ${eTxt}<small>${durTxt}</small></div>
+        <span class="agcat">${esc(c.name)}</span>
+      </div>
+      <div class="agtitle">${esc(ev.title||"(제목 없음)")}</div>
+      ${ev.memo?`<div class="agmemo">${esc(ev.memo)}</div>`:""}
+      <div class="agstat">${Object.entries(STAT).map(([k,v])=>
+        `<button data-s="${k}" class="${st===k?"on":""}">${v}</button>`).join("")}</div>`;
+    card.onclick=e2=>{
+      const b=e2.target.closest(".agstat button");
+      if(b){
+        e2.stopPropagation();
+        ev.status=b.dataset.s;touch();renderAgenda();
+        return;
+      }
+      openEdit(ev.id);
+    };
+    list.appendChild(card);
+  });
+}
+document.querySelectorAll("#agTabs button").forEach(b=>{
+  b.onclick=()=>{agDay=addDays(new Date(),+b.dataset.off);renderAgenda()};
+});
+document.getElementById("agAdd").onclick=()=>{
+  const now=new Date();
+  let startMin=9*60;
+  if(sameDay(agDay,now))startMin=Math.min(23*60,(now.getHours()+1)*60);
+  const s=mkDT(fmtD(agDay),startMin);
+  openEdit(null,{start:s,end:dtStr(new Date(parseDT(s).getTime()+3600000))});
+};
 function scrollToMorning(){scroller.scrollTop=8*hourH()-20}
 
 /* ═══════════════ Supabase 동기화 (실시간 + 폴백 폴링) ═══════════════ */
@@ -1295,7 +1441,7 @@ document.addEventListener("keydown",e=>{
 window.addEventListener("resize",()=>{if(viewMode==="week")buildWeek()});
 
 renderCatbar();
-setView("month");
+setView("agenda");
 startPolling();
 
 // 앱을 다시 열면(30분 이상 백그라운드 후) 자동으로 오늘로 이동
@@ -1303,7 +1449,7 @@ let hiddenAt=null;
 document.addEventListener("visibilitychange",()=>{
   if(document.hidden){hiddenAt=Date.now();return}
   if(hiddenAt&&Date.now()-hiddenAt>30*60000){
-    anchor=new Date();refresh();
+    anchor=new Date();agDay=addDays(new Date(),1);refresh();
     if(viewMode==="week")scrollToMorning();
   }
   hiddenAt=null;
