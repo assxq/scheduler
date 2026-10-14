@@ -190,7 +190,51 @@ button.ghost:hover{color:var(--amber)}
 .agstat button.on[data-s="done"]{background:#1d3321;border-color:var(--ok);color:var(--ok);font-weight:700}
 .agempty{text-align:center;color:var(--faint);padding:48px 0 36px;font-size:14px;line-height:1.7}
 .agempty b{display:block;font-family:ui-monospace,Menlo,monospace;color:var(--dim);font-size:12px;letter-spacing:.14em;margin-bottom:6px}
-#agAdd{width:100%;padding:14px 0;font-size:14px;margin-top:4px}
+#agBtns{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin-top:4px}
+#agBtns button{padding:14px 0;font-size:14px}
+
+/* ───── 카톡 대화창 ───── */
+#chatOverlay{z-index:90}
+.chatbox{
+  width:min(480px,100%);height:min(760px,92vh);display:flex;flex-direction:column;
+  background:#171410;border:1px solid var(--line2);border-radius:14px;overflow:hidden;
+  box-shadow:0 12px 40px #000a;
+}
+.chathead{display:flex;align-items:center;gap:6px;padding:12px 10px 12px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+.chathead>div{flex:1;min-width:0}
+.chathead .ct{font-size:15px;font-weight:800}
+.chathead .cs{font-size:11px;color:var(--dim);margin-top:2px}
+#chatLog{flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+.msg{display:flex;flex-direction:column;max-width:86%}
+.msg.me{align-self:flex-end;align-items:flex-end}
+.msg.bot{align-self:flex-start;align-items:flex-start}
+.bub{padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-all}
+.msg.me .bub{background:#f5d14a;color:#1e1a0c;border-top-right-radius:4px}
+.msg.bot .bub{background:var(--panel2);border:1px solid var(--line2);border-top-left-radius:4px}
+.msg .ts{font-size:10px;color:var(--faint);margin-top:3px;padding:0 4px}
+.kcard{
+  margin-top:8px;background:var(--bg);border:1px solid var(--line2);border-radius:10px;
+  padding:11px 12px 11px 14px;position:relative;overflow:hidden;white-space:normal;min-width:240px;
+}
+.kcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#888)}
+.kcard.off{opacity:.5}
+.kd{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--amber)}
+.kd .rel{color:var(--dim);margin-left:6px}
+.kt{font-family:ui-monospace,Menlo,monospace;font-size:19px;font-weight:700;margin-top:3px}
+.kn{font-size:14px;font-weight:700;margin-top:4px}
+.kw{font-size:12px;color:#f0a06f;margin-top:6px;line-height:1.5}
+.kcats{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.kcats .catchip{padding:5px 10px;font-size:12px}
+.kbtns{display:flex;gap:6px;margin-top:10px}
+.kbtns button{flex:1;padding:9px 0;font-size:13px}
+.chatfoot{display:flex;gap:8px;align-items:flex-end;padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px));background:var(--panel);border-top:1px solid var(--line)}
+#chatInput{flex:1;resize:none;max-height:140px;font-size:16px;line-height:1.4;border-radius:18px;padding:9px 14px}
+#chatSend{width:40px;height:40px;border-radius:50%;padding:0;font-size:18px;flex-shrink:0}
+@media (max-width:640px){
+  #chatOverlay{padding:0}
+  .chatbox{width:100%;height:100dvh;border-radius:0;border:none}
+  .chathead{padding-top:calc(12px + env(safe-area-inset-top,0px))}
+}
 
 /* ───── 월간 뷰 ───── */
 #monthView{flex:1;display:none;flex-direction:column;overflow:auto;padding:0}
@@ -328,6 +372,7 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
     <button id="vwWeek" class="on">주간</button>
     <button id="vwMonth">월간</button>
   </div>
+  <button id="kakaoBtn" class="ghost" aria-label="카톡으로 일정 추가"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 4C7 4 3 7.1 3 11c0 2.4 1.5 4.5 3.9 5.8L6 20l3.6-2.2c.8.2 1.6.2 2.4.2 5 0 9-3.1 9-7s-4-7-9-7z"/></svg></button>
   <button id="syncBtn" class="ghost"><span id="syncDot"></span><span id="syncText">동기화 설정</span></button>
   <button id="toolsBtn" class="ghost" aria-label="스튜디오 도구">⊞</button>
   <button id="refreshBtn" class="ghost" aria-label="새로고침">⟳</button>
@@ -368,7 +413,10 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
       <button data-off="2">모레</button>
     </div>
     <div id="agList"></div>
-    <button id="agAdd" class="primary">＋ 이 날 일정 추가</button>
+    <div id="agBtns">
+      <button id="agKakao">카톡으로 추가</button>
+      <button id="agAdd" class="primary">＋ 이 날 일정 추가</button>
+    </div>
   </div>
 </div>
 
@@ -378,6 +426,25 @@ pre.sql{background:#0f0d0a;border:1px solid var(--line);border-radius:6px;paddin
 </div>
 
 <!-- 일정 편집 모달 -->
+<!-- 카톡 일정 추가 대화창 -->
+<div class="overlay" id="chatOverlay">
+  <div class="chatbox">
+    <div class="chathead">
+      <div>
+        <div class="ct">카톡으로 일정 추가</div>
+        <div class="cs">받은 메시지를 그대로 붙여넣으세요</div>
+      </div>
+      <button id="chatClear" class="ghost">비우기</button>
+      <button id="chatClose" class="ghost" aria-label="닫기">✕</button>
+    </div>
+    <div id="chatLog"></div>
+    <div class="chatfoot">
+      <textarea id="chatInput" rows="1" placeholder="여기에 카톡 내용 붙여넣기"></textarea>
+      <button id="chatSend" class="primary" aria-label="보내기">↑</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="editOverlay">
   <div class="modal">
     <h3 id="editTitle">SCHEDULE</h3>
@@ -860,7 +927,7 @@ function openEdit(id,draft){
   let ev;
   if(id){ev=state.events.find(x=>x.id===id);if(!ev)return}
   else{
-    ev={title:"",catId:selCat||state.categories[0]?.id,start:draft.start,end:draft.end,memo:""};
+    ev={title:draft.title||"",catId:draft.catId||selCat||state.categories[0]?.id,start:draft.start,end:draft.end,memo:draft.memo||""};
     editDraft=ev;
   }
   document.getElementById("editTitle").textContent=id?"SCHEDULE · 편집":"SCHEDULE · 새 일정";
@@ -895,7 +962,10 @@ document.getElementById("eSave").onclick=()=>{
     if(target)Object.assign(target,data);
     else state.events.push({id:editing,...data});
   }
-  else{state.events.push({id:uid(),...data})}
+  else{
+    const nid=uid();state.events.push({id:nid,...data});
+    if(chatLink)chatLinkSaved(nid);
+  }
   touch();closeEdit();refresh();
 };
 document.getElementById("eDelete").onclick=()=>{
@@ -910,7 +980,10 @@ document.getElementById("eDup").onclick=()=>{
   state.events.push(c);touch();closeEdit();refresh();toast("다음주로 복사됨");
 };
 document.getElementById("eCancel").onclick=closeEdit;
-function closeEdit(){editOverlay.classList.remove("show");editing=null;editDraft=null}
+function closeEdit(){
+  editOverlay.classList.remove("show");editing=null;editDraft=null;chatLink=null;
+  if(document.getElementById("chatOverlay").classList.contains("show"))renderChat();
+}
 editOverlay.addEventListener("pointerdown",e=>{if(e.target===editOverlay)closeEdit()});
 
 // 시작 변경 → 종료 자동 세팅 (기본 1시간, 종료를 직접 고치면 자동 조정 중단)
@@ -1427,6 +1500,323 @@ document.getElementById("impFile").onchange=e=>{
   e.target.value="";
 };
 
+/* ═══════════════ 카톡 메시지 → 일정 파서 ═══════════════ */
+const AM_W=["오전","아침","새벽"], PM_W=["오후","저녁","밤"];
+const MER="(오전|오후|아침|낮|저녁|밤|새벽)";
+const WD="일월화수목금토";
+function dOnly(d){const r=new Date(d);r.setHours(0,0,0,0);return r}
+
+function findDate(t,now){
+  const today=dOnly(now);
+  let m, info=null;
+  const mk=(y,mo,d,explicitY)=>{
+    if(mo<1||mo>12||d<1||d>31)return null;
+    let dt=new Date(y,mo-1,d);
+    if(dt.getMonth()!==mo-1)return null;
+    // 연도 자동: 60일 넘게 지난 날짜면 내년으로
+    if(!explicitY&&(today-dt)/86400000>60)dt=new Date(y+1,mo-1,d);
+    return dt;
+  };
+  if((m=t.match(/(\d{4})\s*[년.\-\/]\s*(\d{1,2})\s*[월.\-\/]\s*(\d{1,2})\s*일?/)))
+    info={date:mk(+m[1],+m[2],+m[3],true),raw:m[0]};
+  else if((m=t.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/)))
+    info={date:mk(now.getFullYear(),+m[1],+m[2]),raw:m[0]};
+  else if((m=t.match(/(?<![\d:.])(\d{1,2})\s*[\/.]\s*(\d{1,2})(?![\d:]|\s*시간)/)))
+    info={date:mk(now.getFullYear(),+m[1],+m[2]),raw:m[0]};
+  else if((m=t.match(/(다다음\s*주|다음\s*주|담주|이번\s*주|금주)?\s*([일월화수목금토])요일/))){
+    const wd=WD.indexOf(m[2]);
+    const monIdx=(wd+6)%7, todayMon=(today.getDay()+6)%7;
+    const pre=(m[1]||"").replace(/\s/g,"");
+    let dt;
+    if(pre){
+      const wk=pre==="다다음주"?2:(pre==="다음주"||pre==="담주")?1:0;
+      dt=addDays(today,-todayMon+wk*7+monIdx);
+    }else dt=addDays(today,(wd-today.getDay()+7)%7);
+    info={date:dt,raw:m[0]};
+  }
+  else if((m=t.match(/(오늘|내일|낼|모레|글피)/)))
+    info={date:addDays(today,{오늘:0,내일:1,낼:1,모레:2,글피:3}[m[1]]),raw:m[0]};
+  else if((m=t.match(/(?<!\d)(\d{1,2})\s*일(?!\s*(?:간|째|동안|차))/))){
+    let dt=new Date(today.getFullYear(),today.getMonth(),+m[1]);
+    if(dt<today)dt=new Date(today.getFullYear(),today.getMonth()+1,+m[1]);
+    if(+m[1]>=1&&+m[1]<=31)info={date:dt,raw:m[0]};
+  }
+  return info&&info.date?info:null;
+}
+
+function toMin(h,mi,mer,hasColon){
+  if(mer&&AM_W.includes(mer)){if(h===12)h=0}
+  else if(mer&&PM_W.includes(mer)){if(h<12)h+=12;else if(mer==="밤"&&h===12)h=24}
+  else if(mer==="낮"){if(h<=6)h+=12}
+  else if(h>=1&&h<=7)h+=12;           // 오전/오후 없으면 1~7시는 오후로
+  return h*60+(mi||0);
+}
+
+function findTimes(t){
+  t=t.replace(/정오/g,"낮 12시").replace(/자정/g,"밤 12시");
+  // "10-12시" → "10시-12시"
+  t=t.replace(/(?<![:\d])(\d{1,2})(\s*[~\-–]\s*)(?=(?:오전|오후)?\s*\d{1,2}\s*시)/g,"$1시$2");
+  const re=new RegExp(MER+"?\\s*(\\d{1,2})\\s*(?::\\s*(\\d{2})|시(?!간)\\s*(?:(\\d{1,2})\\s*분|(반))?)","g");
+  const out=[];let m;
+  while((m=re.exec(t))){
+    const h=+m[2];if(h>24)continue;
+    out.push({h,mi:m[3]?+m[3]:m[4]?+m[4]:m[5]?30:0,mer:m[1]||null,colon:!!m[3],raw:m[0]});
+    if(out.length>=2)break;
+  }
+  let rest=t;out.forEach(o=>{rest=rest.replace(o.raw," ")});
+  let dur=null,dm;
+  if((dm=rest.match(/(\d+(?:\.\d+)?)\s*시간\s*(?:(\d{1,2})\s*분|(반))?/)))dur=Math.round(parseFloat(dm[1])*60)+(dm[2]?+dm[2]:dm[3]?30:0);
+  else if((dm=rest.match(/(\d{1,3})\s*분\s*(?:간|동안|정도)/)))dur=+dm[1];
+  if(!out.length)return{start:null,end:null,dur};
+  const s=out[0];
+  const start=toMin(s.h,s.mi,s.mer,s.colon);
+  let end=null;
+  if(out[1]){
+    const e=out[1];
+    end=toMin(e.h,e.mi,e.mer||s.mer,e.colon);
+    if(end<=start&&end+720>start&&end+720<=1440)end+=720;
+    if(end<=start)end+=1440;
+  }
+  return{start,end,dur};
+}
+
+function guessCat(t){
+  const has=(re)=>re.test(t);
+  const byName=state.categories.find(c=>c.name&&t.includes(c.name));
+  if(byName)return byName.id;
+  const pick=(kw)=>state.categories.find(c=>c.name.includes(kw));
+  if(has(/라이브|생방|방송|live/i)&&pick("라이브"))return pick("라이브").id;
+  if(has(/녹화|촬영|레코딩|녹음/)&&pick("녹화"))return pick("녹화").id;
+  return selCat||state.categories[0]?.id;
+}
+const NOT_NAME=["대표","감독","팀장","실장","매니저","고객","담당자","부장","과장","사장","회장","선배","여러분","선생","강사","작가","교수","원장","고객님"];
+function guessTitle(t,catId){
+  const c=catById(catId);
+  const q=t.match(/[「“"']([^」”"']{2,30})[」”"']/);
+  if(q)return q[1];
+  const re=/([가-힣]{2,4})\s*(선생님|쌤|강사님|작가님|교수님|원장님|님)/g;let m;
+  while((m=re.exec(t))){
+    if(!NOT_NAME.includes(m[1]))return `${c.name} · ${m[1]} ${m[2]==="님"?"님":m[2]}`.replace(" 님","님");
+  }
+  return c.name;
+}
+
+function cleanKakao(text){
+  return text.split(/\r?\n/)
+    .filter(l=>!/^-{3,}.*-{3,}$/.test(l.trim()))
+    .map(l=>l.replace(/^\s*\[[^\]]{1,20}\]\s*\[(오전|오후)\s*\d{1,2}:\d{2}\]\s*/,"")
+             .replace(/^\s*\d{4}\.\s*\d{1,2}\.\s*\d{1,2}\.?\s*(오전|오후)\s*\d{1,2}:\d{2},\s*[^:]{1,20}\s*:\s*/,""))
+    .join("\n").trim();
+}
+
+function parseOne(seg,now){
+  const di=findDate(seg,now);
+  const rest=di?seg.replace(di.raw," "):seg;
+  const ti=findTimes(rest);
+  if(!di&&ti.start==null)return null;
+  const day=di?di.date:dOnly(now);
+  const sMin=ti.start!=null?ti.start:9*60;
+  const eMin=ti.end!=null?ti.end:sMin+(ti.dur||60);
+  const catId=guessCat(seg);
+  const sDt=new Date(day);sDt.setMinutes(sMin);
+  const eDt=new Date(day);eDt.setMinutes(eMin);
+  const need=[];
+  if(!di)need.push("날짜");
+  if(ti.start==null)need.push("시간");
+  return{start:dtStr(sDt),end:dtStr(eDt),catId,title:guessTitle(seg,catId),memo:seg.trim(),need};
+}
+
+function parseKakao(text,now=new Date()){
+  const clean=cleanKakao(text);
+  const lines=clean.split(/\n+/).filter(l=>l.trim());
+  const withDate=lines.filter(l=>findDate(l,now));
+  if(withDate.length<=1)return[parseOne(clean,now)].filter(Boolean);
+  // 날짜가 여러 줄에 있으면 줄마다 따로 일정
+  const segs=[];
+  lines.forEach(l=>{
+    if(findDate(l,now)||!segs.length)segs.push(l);
+    else segs[segs.length-1]+="\n"+l;
+  });
+  return segs.map(sg=>parseOne(sg,now)).filter(Boolean);
+}
+
+/* ═══════════════ 카톡 대화창 ═══════════════ */
+const LS_CHAT="msched_chat";
+const chatOverlay=document.getElementById("chatOverlay");
+const chatLog=document.getElementById("chatLog");
+const chatInput=document.getElementById("chatInput");
+let chat=[];try{chat=JSON.parse(localStorage.getItem(LS_CHAT))||[]}catch(e){chat=[]}
+let chatLink=null; // {mi, ii} 편집창에서 저장되면 연결할 대화 항목
+function saveChat(){
+  if(chat.length>80)chat=chat.slice(-80);
+  try{localStorage.setItem(LS_CHAT,JSON.stringify(chat))}catch(e){}
+}
+function openChat(){chatOverlay.classList.add("show");renderChat();setTimeout(()=>chatInput.focus(),50)}
+function closeChat(){chatOverlay.classList.remove("show")}
+function hhmm(ts){const d=new Date(ts);const h=d.getHours();return `${h<12?"오전":"오후"} ${h%12||12}:${String(d.getMinutes()).padStart(2,"0")}`}
+function relLabel(d){
+  const off=Math.round((dOnly(d)-dOnly(new Date()))/86400000);
+  return off===0?"오늘":off===1?"내일":off===2?"모레":off>0?`D-${off}`:`${-off}일 전`;
+}
+function conflicts(evLike,selfId){
+  const s=parseDT(evLike.start),e=parseDT(evLike.end);
+  return state.events.filter(x=>x.id!==selfId&&parseDT(x.start)<e&&parseDT(x.end)>s);
+}
+function fmtRange(evLike){
+  const s=parseDT(evLike.start),e=parseDT(evLike.end);
+  const eTxt=sameDay(s,e)?fmtT(minsOf(e)):(minsOf(e)===0&&(e-s)<=86400000?"24:00":`${e.getMonth()+1}/${e.getDate()} ${fmtT(minsOf(e))}`);
+  return `${fmtT(minsOf(s))} – ${eTxt}`;
+}
+
+function sendChat(){
+  const text=chatInput.value.trim();
+  if(!text)return;
+  chatInput.value="";autoGrow();
+  const now=Date.now();
+  chat.push({role:"me",text,ts:now});
+  const parsed=parseKakao(text);
+  if(!parsed.length){
+    chat.push({role:"bot",ts:now,text:"날짜나 시간을 찾지 못했어요.\n예: 10월 14일 오전 10시, 내일 오후 2시~4시",items:[]});
+  }else{
+    const items=parsed.map(p=>{
+      if(!p.need.length){
+        const id=uid();
+        state.events.push({id,title:p.title,catId:p.catId,start:p.start,end:p.end,memo:p.memo});
+        return{status:"added",evId:id};
+      }
+      return{status:"pending",draft:p};
+    });
+    const added=items.filter(i=>i.status==="added").length;
+    const pend=items.length-added;
+    let msg=added?`일정 ${added>1?added+"개를 ":""}추가했어요`:"";
+    if(pend)msg+=(msg?"\n":"")+`${pend>1?pend+"개는 ":""}확인 후 추가해 주세요`;
+    chat.push({role:"bot",ts:now,text:msg,items});
+    if(added){touch();refresh()}
+  }
+  saveChat();renderChat();
+}
+function chatLinkSaved(newId){
+  const it=chat[chatLink.mi]?.items?.[chatLink.ii];
+  if(it){it.status="added";it.evId=newId;delete it.draft;saveChat()}
+}
+
+function renderChat(){
+  chatLog.innerHTML="";
+  if(!chat.length){
+    const w=document.createElement("div");w.className="msg bot";
+    w.innerHTML=`<div class="bub">카톡으로 받은 메시지를 그대로 붙여넣으면 날짜와 시간을 찾아 바로 일정에 넣어드려요. 연도는 자동으로 붙어요.\n\n예) 감사합니다 대표님! 그럼 10월14일 오전10시부터 진행하겠습니다</div>`;
+    chatLog.appendChild(w);
+  }
+  chat.forEach((m,mi)=>{
+    const w=document.createElement("div");w.className="msg "+(m.role==="me"?"me":"bot");
+    const b=document.createElement("div");b.className="bub";
+    if(m.text){const tx=document.createElement("div");tx.textContent=m.text;b.appendChild(tx)}
+    (m.items||[]).forEach((it,ii)=>b.appendChild(renderItem(it,mi,ii)));
+    w.appendChild(b);
+    const ts=document.createElement("div");ts.className="ts";ts.textContent=hhmm(m.ts);w.appendChild(ts);
+    chatLog.appendChild(w);
+  });
+  chatLog.scrollTop=chatLog.scrollHeight;
+}
+
+function renderItem(it,mi,ii){
+  const card=document.createElement("div");card.className="kcard";
+  let ev=null,data;
+  if(it.status==="added"){
+    ev=state.events.find(x=>x.id===it.evId);
+    if(!ev){card.classList.add("off");card.innerHTML=`<div class="kn">삭제된 일정이에요</div>`;return card}
+    data=ev;
+  }else data=it.draft;
+  const c=catById(data.catId);
+  card.style.setProperty("--c",c.color);
+  const s=parseDT(data.start);
+  const hol=holidays[fmtD(s)];
+  let h=`<div class="kd">${fmtD(s).replace(/-/g,".")} (${DAYNM[s.getDay()]})<span class="rel">${relLabel(s)}${hol?" · "+esc(hol):""}</span></div>`;
+  h+=`<div class="kt">${fmtRange(data)}</div>`;
+  h+=`<div class="kn">${esc(data.title||"(제목 없음)")}</div>`;
+  const warns=[];
+  if(it.status==="pending"&&data.need?.length){
+    const nd=data.need.join("·");
+    const fill=data.need.length>1?"오늘 09:00":data.need[0]==="시간"?"09:00":"오늘";
+    warns.push(`${nd}${nd.endsWith("간")?"을":"를"} 못 찾아서 ${fill}으로 넣어뒀어요`);
+  }
+  if(it.status==="undone")warns.push("되돌렸어요");
+  const cf=conflicts(data,ev?.id);
+  if(cf.length&&it.status!=="undone")warns.push(`겹치는 일정: ${cf.slice(0,2).map(x=>x.title||catById(x.catId).name).join(", ")}${cf.length>2?" 외 "+(cf.length-2):""}`);
+  if(warns.length)h+=`<div class="kw">${warns.map(esc).join("<br>")}</div>`;
+  card.innerHTML=h;
+  if(it.status==="undone")card.classList.add("off");
+
+  // 카테고리 빠른 변경
+  if(it.status!=="undone"){
+    const cats=document.createElement("div");cats.className="kcats";
+    state.categories.forEach(cc=>{
+      const chip=document.createElement("div");
+      chip.className="catchip"+(cc.id===data.catId?" sel":"");
+      chip.innerHTML=`<span class="dot" style="background:${cc.color}"></span>${esc(cc.name)}`;
+      chip.onclick=()=>{
+        const oldName=catById(data.catId).name;
+        data.catId=cc.id;
+        if(data.title===oldName)data.title=cc.name;
+        else if(data.title?.startsWith(oldName+" · "))data.title=cc.name+data.title.slice(oldName.length);
+        if(ev)touch();
+        saveChat();renderChat();refresh();
+      };
+      cats.appendChild(chip);
+    });
+    card.appendChild(cats);
+  }
+
+  const btns=document.createElement("div");btns.className="kbtns";
+  const mkB=(label,cls,fn)=>{const x=document.createElement("button");x.textContent=label;if(cls)x.className=cls;x.onclick=fn;btns.appendChild(x)};
+  if(it.status==="added"){
+    mkB("편집","",()=>openEdit(ev.id));
+    mkB("되돌리기","",()=>{
+      it.draft={title:ev.title,catId:ev.catId,start:ev.start,end:ev.end,memo:ev.memo};
+      state.events=state.events.filter(x=>x.id!==ev.id);
+      it.status="undone";delete it.evId;
+      touch();saveChat();renderChat();refresh();
+    });
+    mkB("보기","primary",()=>{closeChat();agDay=parseDT(ev.start);setView("agenda")});
+  }else if(it.status==="pending"){
+    mkB("편집","",()=>{chatLink={mi,ii};openEdit(null,{...data})});
+    mkB("이대로 추가","primary",()=>{
+      const id=uid();
+      state.events.push({id,title:data.title,catId:data.catId,start:data.start,end:data.end,memo:data.memo});
+      it.status="added";it.evId=id;delete it.draft;
+      touch();saveChat();renderChat();refresh();
+    });
+  }else{
+    mkB("다시 추가","",()=>{
+      const id=uid();
+      state.events.push({id,...it.draft});
+      it.status="added";it.evId=id;delete it.draft;
+      touch();saveChat();renderChat();refresh();
+    });
+  }
+  card.appendChild(btns);
+  return card;
+}
+
+function autoGrow(){chatInput.style.height="auto";chatInput.style.height=Math.min(140,chatInput.scrollHeight)+"px"}
+chatInput.addEventListener("input",autoGrow);
+chatInput.addEventListener("paste",()=>{
+  // 빈 입력창에 붙여넣으면 바로 처리
+  if(chatInput.value.trim()==="")setTimeout(sendChat,0);
+});
+chatInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();sendChat()}
+});
+document.getElementById("chatSend").onclick=sendChat;
+document.getElementById("chatClose").onclick=closeChat;
+document.getElementById("chatClear").onclick=()=>{
+  if(!chat.length)return;
+  if(!confirm("대화 기록만 지워요. 추가된 일정은 그대로 남아요."))return;
+  chat=[];saveChat();renderChat();
+};
+document.getElementById("kakaoBtn").onclick=openChat;
+document.getElementById("agKakao").onclick=openChat;
+
 /* ═══════════════ 토스트 & 초기화 ═══════════════ */
 let toastTimer=null;
 function toast(msg){
@@ -1436,7 +1826,9 @@ function toast(msg){
   toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
 }
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeEdit();catOverlay.classList.remove("show");setOverlay.classList.remove("show");toolsOverlay.classList.remove("show")}
+  if(e.key!=="Escape")return;
+  if(editOverlay.classList.contains("show")){closeEdit();return}
+  catOverlay.classList.remove("show");setOverlay.classList.remove("show");toolsOverlay.classList.remove("show");closeChat();
 });
 window.addEventListener("resize",()=>{if(viewMode==="week")buildWeek()});
 
